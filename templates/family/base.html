@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>{% block title %}Family Tree{% endblock %}</title>
+    <link rel="icon" href="{% static "favicon.ico" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "family/style/main.css" %}">
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+{% block content %}{% endblock %}
+<div id="overlay">
+        <div id="modal">
+            <div style="text-align: right; width=100%; padding-right: -20px"><a href="javascript:overlay()" style="text-decoration: none; color: #222">&#x2716;</a></div>
+            {% block modal %}
+            <div id="modalContent"><p>Loading...</p><div class="loader"></div>
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+<script>
+    function overlay() {
+        el = document.getElementById("overlay");
+        el.style.visibility = (el.style.visibility == "visible") ? "hidden" : "visible" ;
+    }
+</script>
+</body>
+
+</html> 

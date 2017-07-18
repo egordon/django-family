@@ -1,0 +1,68 @@
+{% extends "family/base.html" %}
+{% load static %}
+
+{% block title %}{{ person.name }}{% endblock %}
+
+{% block content %}
+<style>
+dt {
+    padding-top: 10px;
+}
+</style>
+<div itemscope itemtype="http://schema.org/Person">
+<h1>{% if person.firstName %}<span itemprop="givenName">{{ person.firstName }}</span>{% endif %} {% if person.middleNames %}<span itemprop="additionalName">{{ person.middleNames }}</span>{% endif %} {% if person.nickName %}"<span itemprop="additionalName">{{ person.nickName }}</span>"{% endif %} {% if person.lastName %}<span itemprop="familyName">{{ person.lastName }}</span>{% endif %}{% if person.birthName %} (née {{ person.birthName }}){% endif %}</h1>
+<div style="max-width: 200px; float: left; display: block; margin: 10px">
+{% if person.mugshot %}
+<img style="max-width: 100%; padding-bottom: 0" src="{{ person.mugshot.image.url }}"/>
+<p style="font-size: 10px; text-align: justify">{% if person.mugshot.location or person.mugshot.date %}<em>(Taken {% if person.mugshot.date %}{{ person.mugshot.date }} {% endif %}{% if person.mugshot.location %}at {{ person.mugshot.location }}{% endif %})</em>{% endif %}<br /> {{ person.mugshot.caption }}
+{% else %}
+<img style="width: 200px;" src="{% static "family/img/blankAvatar.svg" %}"/>
+{% endif %}
+</div>
+<div style="margin-left: 220px; padding: 10px">
+<dl>
+{% if person.birth %}
+<dt><b>Born</b></dt>
+<dd>{{ person.birth.date }} {% if not person.death %}<em>(age {{ person.age }})</em>{% endif %}</dd>
+<dd>{% if person.birth.location %}{{ person.birth.location }}{% endif %}</dd>
+{% endif %}
+{% if person.death %}
+<dt><b>Died</b></dt>
+<dd>{{ person.death.date }} <em>(age {{ person.age }})</em></dd>
+<dd>{% if person.death.location %}{{ person.death.location }}{% endif %}</dd>
+{% endif %}
+{% if person.burial.location %}
+<dt><b>Burial</b></dt>
+<dd>{{ person.burial.location }}</dd>
+{% endif %}
+{% if person.parents %}
+<dt><b>Parents</b> (<a href="{% url 'mDetail' person.parents.id %}">{% if person.parents.divorced %}Divorced{% elif person.parents.isMarriage %}Married{% else %}Not Married{% endif %}</a>)</dt>
+{% for s in person.parents.spouses.all %}
+<dd><a href="{% url 'detail' s.id %}">{{ s.name }}</a></dd>
+{% endfor %}
+{% endif %}
+<hr />
+{% for m in person.marriages.all %}
+    {% if m.children_of.all %}
+    <dt><b>Children with
+    {% if m.spouses.all.0 == person %}
+    <a href="{% url 'detail' m.spouses.all.1.id %}"> {{ m.spouses.all.1.name }}</a>
+    {% else %}
+    <a href="{% url 'detail' m.spouses.all.0.id %}"> {{ m.spouses.all.0.name }}</a>
+    {% endif %}</b> (<a href="{% url 'mDetail' m.id %}">{% if m.divorced %}Divorced{% elif m.isMarriage %}Married{% else %}Not Married{% endif %}</a>)</dt>
+    {% for child in m.children_of.all %}
+        <dd><a href="{% url 'detail' child.id %}"> {{ child.name }}</a></dd>
+    {% endfor %}
+    {% else %}
+    <dt><b>{% if m.divorced %}Divorced{% elif m.isMarriage %}Married{% endif %} {% if m.spouses.all.0 == person %}
+    <a href="{% url 'detail' m.spouses.all.1.id %}"> {{ m.spouses.all.1.name }}</a>
+    {% else %}
+    <a href="{% url 'detail' m.spouses.all.0.id %}"> {{ m.spouses.all.0.name }}</a>
+    {% endif %}</b> (<a href="{% url 'mDetail' m.id %}">Detail</a>)</dt>
+    {% endif %}
+{% endfor %}
+</dl>
+</div>
+<div style="clear: both"></div>
+</div>
+{% endblock %}

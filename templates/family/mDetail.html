@@ -1,0 +1,34 @@
+{% extends "family/base.html" %}
+{% load static %}
+
+{% block title %}{{ marriage }}{% endblock %}
+
+{% block content %}
+<style>
+dt {
+    padding-top: 10px;
+}
+</style>
+<div>
+<h2>{% for s in marriage.spouses.all %}
+<a href="{% url 'detail' s.id %}">{{ s.name }}</a> {% if not forloop.last %}&amp;<br />{% endif %}
+{% endfor %}</h2>
+<hr />
+<dl>
+{% if marriage.date %}
+<dt><b>Date</b></dt>
+<dd>{{ marriage.date }}</dd>
+{% endif %}
+{% if marriage.location %}
+<dt><b>Location</b></dt>
+<dd>{{ marriage.location }}</dd>
+{% endif %}
+{% if marriage.children_of.all %}
+<dt><b>Children</b></dt>
+{% endif %}
+{% for child in marriage.children_of.all %}
+<dd><a href="{% url 'detail' child.id %}">{{ child.name }}</a></dd>
+{% endfor %}
+</dl>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{
+    "nodes": [
+    {% for n in nodes %}
+    {"id": "{{ n.0 }}", "label": "{{ n.1|safe }}", "shape": "{{ n.2 }}", "color": {"background": "{{ n.3 }}", "mass": {{ n.4 }}, "border": "black"}, "widthConstraint": {"minimum": 100, "maximum": 200}}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    ],
+    "edges": [
+        {% for e in edges %}
+        {"from": "{{ e.0 }}", "to": "{{ e.1 }}"}{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]
+}

@@ -1,0 +1,124 @@
+{% extends "family/base.html" %}
+{% load static %}
+
+{% block title %}Family Tree{% endblock %}
+
+{% block head %}
+<script type="text/javascript" src="{% static "family/vis.min.js" %}"></script>
+<link href="{% static "family/vis.min.css" %}" rel="stylesheet" type="text/css" />
+
+<style type="text/css">
+    #familytree {
+        width: 100%;
+        height: 500px;
+        border: 1px solid lightgray;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="familytree"></div>
+<script type="text/javascript">
+    var network;
+
+    // Capture html
+    function setup() {
+        modalOldHTML = document.getElementById('modalContent').innerHTML;
+        overlay();
+
+        var http_request = new XMLHttpRequest();
+
+        http_request.onreadystatechange = function(){
+            
+               if (http_request.readyState == 4){
+                  // Javascript function JSON.parse to parse JSON data
+                  var jsonObj = JSON.parse(http_request.responseText);
+
+                  // create an array with nodes
+                    var nodes = new vis.DataSet(jsonObj.nodes);
+
+                    // create an array with edges
+                    var edges = new vis.DataSet(jsonObj.edges);
+
+                    // create a network
+                    var container = document.getElementById('familytree');
+
+                    // provide the data in the vis format
+                    var data = {
+                        nodes: nodes,
+                        edges: edges
+                    };
+                    var options = {
+                        layout: {
+                            hierarchical: {
+                                sortMethod: "directed",
+                                nodeSpacing: 200,
+                                levelSeparation: 150,
+                            }
+                        },
+                        edges: {
+                            arrows: "to",
+                        },
+                        nodes: {
+                            font: "16px arial"
+                        },
+                        physics: {
+                            enabled: false,
+                            barnesHut: {
+                                centralGravity: -1,
+                                springConstant: 0.001,
+                                avoidOverlap: 1
+                            },
+                            hierarchicalRepulsion: {
+                                nodeDistance: 200,
+                            }
+                        }
+                    };
+
+                    // initialize your network!
+                    network = new vis.Network(container, data, options);
+
+                    network.once("stabilizationIterationsDone", function() {
+                        
+                    });
+
+                    network.on("doubleClick", 
+                        function(obj) {
+                            if(obj.nodes.length > 0) {
+                                myNode = nodes.get(obj.nodes[0]);
+                                overlay();
+                                modalFill(myNode.id);
+                            }
+                        }
+                    );
+
+                    network.focus('p1', {
+                            scale: 0.7,
+                        });
+                    overlay();
+               }
+            }
+        http_request.open("GET", "list/", true);
+        http_request.send();
+    }
+    window.onload = setup;
+
+    // AJAX for Modal
+    function modalFill(id) {
+        network.unselectAll();
+        network.focus(id, { scale: 1.0 });
+        document.getElementById('modalContent').innerHTML = modalOldHTML;
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("modalContent").innerHTML = this.responseText;
+            }
+        };
+        xhttp.open("GET", id + "/?bare=1", true);
+        xhttp.send();
+    }
+
+    
+
+</script>
+{% endblock %}
