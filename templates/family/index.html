@@ -4,7 +4,6 @@
 {% block title %}Family Tree{% endblock %}
 
 {% block head %}
-<script type="text/javascript" src="{% static "family/vis.min.js" %}"></script>
 <link href="{% static "family/vis.min.css" %}" rel="stylesheet" type="text/css" />
 
 <style type="text/css">
@@ -21,10 +20,31 @@
 <script type="text/javascript">
     var network;
 
+//this function will work cross-browser for loading scripts asynchronously
+function loadScript(src, callback)
+{
+  var s,
+      r,
+      t;
+  r = false;
+  s = document.createElement('script');
+  s.type = 'text/javascript';
+  s.src = src;
+  s.onload = s.onreadystatechange = function() {
+    //console.log( this.readyState ); //uncomment this line to see which ready states are called.
+    if ( !r && (!this.readyState || this.readyState == 'complete') )
+    {
+      r = true;
+      callback();
+    }
+  };
+  t = document.getElementsByTagName('script')[0];
+  t.parentNode.insertBefore(s, t);
+}
+
     // Capture html
-    function setup() {
+    function onloadvis() {
         modalOldHTML = document.getElementById('modalContent').innerHTML;
-        overlay();
 
         var http_request = new XMLHttpRequest();
 
@@ -53,7 +73,7 @@
                             hierarchical: {
                                 sortMethod: "directed",
                                 nodeSpacing: 200,
-                                levelSeparation: 150,
+                                levelSeparation: 200,
                             }
                         },
                         edges: {
@@ -63,10 +83,10 @@
                             font: "16px arial"
                         },
                         physics: {
-                            enabled: false,
+                            enabled: true,
                             barnesHut: {
-                                centralGravity: -1,
-                                springConstant: 0.001,
+                                centralGravity: 1,
+                                springConstant: 0.005,
                                 avoidOverlap: 1
                             },
                             hierarchicalRepulsion: {
@@ -79,6 +99,10 @@
                     network = new vis.Network(container, data, options);
 
                     network.once("stabilizationIterationsDone", function() {
+                    network.focus('p1', {
+                            scale: 0.7,
+                        });
+                    overlay();
                         
                     });
 
@@ -92,14 +116,15 @@
                         }
                     );
 
-                    network.focus('p1', {
-                            scale: 0.7,
-                        });
-                    overlay();
                }
             }
         http_request.open("GET", "list/", true);
         http_request.send();
+    }
+
+    function setup() {
+        overlay();
+        loadScript('{% static "family/vis.min.js" %}', onloadvis);
     }
     window.onload = setup;
 

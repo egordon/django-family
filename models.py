@@ -260,6 +260,11 @@ class Marriage(models.Model):
     spouses = models.ManyToManyField(Person, related_name='marriages')
     album = models.ManyToManyField(Photograph, blank=True)
 
+    def save(self, *args, **kwargs):
+        cache.delete('nodes')
+        cache.delete('edges')
+        super(Person, self).save(*args, **kwargs)
+
     def __str__(self):
         nameList = list()
         for spouse in self.spouses.all():
