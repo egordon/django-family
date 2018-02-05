@@ -6,6 +6,7 @@ import os
 from django.conf import settings
 from datetime import date
 from tinymce.models import HTMLField
+from django.core.cache import cache
 # Based off of:
 # https://github.com/dwdyer/familytree/blob/master/people/models.py
 
@@ -263,7 +264,7 @@ class Marriage(models.Model):
     def save(self, *args, **kwargs):
         cache.delete('nodes')
         cache.delete('edges')
-        super(Person, self).save(*args, **kwargs)
+        super(Marriage, self).save(*args, **kwargs)
 
     def __str__(self):
         nameList = list()
